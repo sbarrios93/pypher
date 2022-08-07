@@ -7,7 +7,7 @@ OPENAPI_DESCRIPTOR_DIR = api/openapi
 MGA_VERSION = 0.2.0
 
 .PHONY: up
-up: start config.toml ## Set up the development environment
+up: init config.toml ## Set up the development environment
 
 .PHONY: down
 down: clear ## Destroy the development environment
@@ -20,8 +20,8 @@ reset: down up ## Reset the development environment
 docker-compose.override.yml:
 	cp docker-compose.override.yml.dist docker-compose.override.yml
 
-.PHONY: start
-start: docker-compose.override.yml ## Start docker development environment
+.PHONY: init
+init: docker-compose.override.yml ## Start docker development environment
 	@ if [ docker-compose.override.yml -ot docker-compose.override.yml.dist ]; then diff -u docker-compose.override.yml docker-compose.override.yml.dist || (echo "!!! The distributed docker-compose.override.yml example changed. Please update your file accordingly (or at least touch it). !!!" && false); fi
 	docker-compose up -d
 
