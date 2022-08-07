@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/sbarrios93/pypher/pkg/common/sysinfo"
+	"github.com/sbarrios93/pypher/pkg/cli"
 )
 
 func main() {
-	sysinfo.PythonVersion()
+	cli.Start()
 }
