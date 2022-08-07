@@ -24,7 +24,7 @@ func StartCommand() *cobra.Command {
 			}
 			return nil
 		},
-		Short: "Initialize a Python Project under the current directory or directory path specified", // TODO add a flag option  to pass a directory path
+		Short: "Initialize a Python Project under the current directory or directory path specified",
 		RunE: func(command *cobra.Command, args []string) error {
 
 			var path string
