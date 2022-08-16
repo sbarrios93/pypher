@@ -2,8 +2,8 @@ package commands
 
 import (
 	"log"
-	"path/filepath"
 
+	"github.com/sbarrios93/pypher/pkg/utils/paths"
 	"github.com/spf13/cobra"
 )
 
@@ -29,16 +29,20 @@ func NewCommand() *cobra.Command {
 			unattended, _ := command.Flags().GetBool("unattended")
 
 			// resolve directory path
-			dir = filepath.Base(dir)
-			// if err != nil {
-			// log.Fatalf("could not resolve path specified. Got %s", dir)
-			// }
-			log.Printf("%v, %v, %v", dir, name, unattended)
+			projectPath := paths.AsProjectPath(dir)
+			// make if it doesnt exist
+			projectPath.MkDirAll()
+
+			log.Printf("%v, %v, %v", projectPath.Path, name, unattended)
 
 			if len(args) == 1 && args[0] == "init" {
-				RunInit(dir)
+				RunInit(projectPath, name, unattended)
 			} else if len(args) == 0 {
-				RunNew(dir)
+				if projectPath.IsEmpty() {
+					RunNew(projectPath, name, unattended)
+				} else {
+					log.Fatalf("can't start new project on path %s, directory is not empty", projectPath.Path)
+				}
 			} else {
 				log.Fatalf("Number of args does not match valid arguments. Got %q", args)
 			}

@@ -1,13 +1,8 @@
 package commands
 
 import (
-	"fmt"
-	"path"
-	"runtime"
+	"github.com/sbarrios93/pypher/pkg/utils/paths"
 )
 
-func RunInit(dirPath string) {
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "..")
-	fmt.Printf("%q, %q, %q", filename, dir, dirPath)
+func RunInit(projectPath *paths.ProjectPath, name string, unattended bool) {
 }
