@@ -1,14 +1,15 @@
-package commands
+package commands_test
 
 import (
 	"bytes"
 	"testing"
 
+	"github.com/sbarrios93/pypher/pkg/cli/commands"
 	"github.com/spf13/cobra"
 )
 
 func initialize_command() (*bytes.Buffer, *cobra.Command) {
-	cmd := NewCommand()
+	cmd := commands.NewCommand()
 	buf := new(bytes.Buffer)
 	cmd.SetOut(buf)
 	cmd.SetErr(buf)
@@ -21,7 +22,7 @@ func noUnknownArgs(err error, t *testing.T) {
 		t.Fatal("Expected an error")
 	}
 	got := err.Error()
-	expected := `unknown command "anyarg" for "new"`
+	expected := `invalid argument "anyarg" for "new"`
 	if got != expected {
 		t.Errorf("Expected: %q, got: %q", expected, got)
 	}
