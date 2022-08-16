@@ -6,7 +6,20 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 )
+
+type commonPaths struct {
+	Currentwd string
+	UserHome  string
+}
+
+var usr, _ = user.Current()
+
+var CommonPaths = commonPaths{
+	Currentwd: Getwd(),
+	UserHome:  usr.HomeDir,
+}
 
 func PythonVersion() {
 	command := exec.Command("python", "-V")
