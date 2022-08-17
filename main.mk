@@ -223,7 +223,3 @@ help:
 # Variable outputting/exporting rules
 var-%: ; @echo $($*)
 varexport-%: ; @echo $*=$($*)
-
-# Update main targets
-main.mk:
-	curl https://raw.githubusercontent.com/sagikazarmark/makefiles/master/go-app/main.mk > main.mk

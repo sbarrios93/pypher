@@ -1,6 +1,8 @@
 {
     "makefile.extensionOutputFolder": "./.vscode",
     "conventionalCommits.scopes": [
-        "github-actions"
+        "github-actions",
+        "make",
+        "dependencies"
     ]
 }
