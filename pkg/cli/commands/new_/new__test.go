@@ -1,15 +1,15 @@
-package commands_test
+package new__test
 
 import (
 	"bytes"
 	"testing"
 
-	"github.com/sbarrios93/pypher/pkg/cli/commands"
+	"github.com/sbarrios93/pypher/pkg/cli/commands/new_"
 	"github.com/spf13/cobra"
 )
 
 func initialize_command() (*bytes.Buffer, *cobra.Command) {
-	cmd := commands.NewCommand()
+	cmd := new_.NewCommand()
 	buf := new(bytes.Buffer)
 	cmd.SetOut(buf)
 	cmd.SetErr(buf)

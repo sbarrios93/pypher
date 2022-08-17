@@ -1,4 +1,4 @@
-package commands
+package new_
 
 import (
 	"log"
@@ -23,28 +23,22 @@ func NewCommand() *cobra.Command {
 		Short:     "Start a new Python Project on the given path or initialize a python project under the current directory. Pass the `init` argument to initialize a project instead of starting a new one",
 		RunE: func(command *cobra.Command, args []string) error {
 
-			// var err error
+			init_ := false
 			dir, _ := command.Flags().GetString("directory")
 			name, _ := command.Flags().GetString("name")
 			unattended, _ := command.Flags().GetBool("unattended")
 
 			// resolve directory path
 			projectPath := paths.AsProjectPath(dir)
-			// make if it doesnt exist
-			projectPath.MkDirAll()
-
-			log.Printf("%v, %v, %v", projectPath.Path, name, unattended)
 
 			if len(args) == 1 && args[0] == "init" {
-				RunInit(projectPath, name, unattended)
-			} else if len(args) == 0 {
-				if projectPath.IsEmpty() {
-					RunNew(projectPath, name, unattended)
-				} else {
-					log.Fatalf("can't start new project on path %s, directory is not empty", projectPath.Path)
-				}
+				init_ = true
+			}
+			// We can't start a project if the directory is not empty
+			if projectPath.Exists() && !projectPath.IsEmpty() && !init_ {
+				log.Fatalf("can't start new project on path %s, directory is not empty", projectPath.Path)
 			} else {
-				log.Fatalf("Number of args does not match valid arguments. Got %q", args)
+				RunNew(projectPath, name, unattended, init_)
 			}
 			return nil
 		},

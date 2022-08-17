@@ -1,12 +1,11 @@
-package paths_test
+package paths
 
 import (
 	"os"
+	"os/user"
 	"path/filepath"
 	"reflect"
 	"testing"
-
-	"github.com/sbarrios93/pypher/pkg/utils/paths"
 )
 
 func TestAsProjectPath(t *testing.T) {
@@ -24,12 +23,12 @@ func TestAsProjectPath(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *paths.ProjectPath
+		want *ProjectPath
 	}{
 		{
 			name: "Test root directory '/'",
 			args: args{dir: "/"},
-			want: &paths.ProjectPath{
+			want: &ProjectPath{
 				Path:   "/",
 				Name:   "/",
 				Parent: "/",
@@ -38,7 +37,7 @@ func TestAsProjectPath(t *testing.T) {
 		{
 			name: "Test any absolute dir",
 			args: args{dir: tmpSubDir},
-			want: &paths.ProjectPath{
+			want: &ProjectPath{
 				Path:   tmpSubDir,
 				Name:   "path",
 				Parent: tmpDir + "/any",
@@ -47,7 +46,7 @@ func TestAsProjectPath(t *testing.T) {
 		{
 			name: "Test current directory",
 			args: args{dir: "."},
-			want: &paths.ProjectPath{
+			want: &ProjectPath{
 				Path:   wd,
 				Name:   filepath.Base(wd),
 				Parent: filepath.Dir(wd),
@@ -56,7 +55,7 @@ func TestAsProjectPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := paths.AsProjectPath(tt.args.dir); !reflect.DeepEqual(got, tt.want) {
+			if got := AsProjectPath(tt.args.dir); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("AsProjectPath() = %v, want %v", got, tt.want)
 			}
 		})
@@ -92,7 +91,7 @@ func TestProjectPath_MkDirAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &paths.ProjectPath{
+			p := &ProjectPath{
 				Path:   tt.fields.Path,
 				Name:   tt.fields.Name,
 				Parent: tt.fields.Parent,
@@ -163,7 +162,7 @@ func TestProjectPath_IsEmpty(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &paths.ProjectPath{
+			p := &ProjectPath{
 				Path:   tt.fields.Path,
 				Name:   tt.fields.Name,
 				Parent: tt.fields.Parent,
@@ -245,13 +244,77 @@ func TestProjectPath_Exists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &paths.ProjectPath{
+			p := &ProjectPath{
 				Path:   tt.fields.Path,
 				Name:   tt.fields.Name,
 				Parent: tt.fields.Parent,
 			}
 			if got := p.Exists(); got != tt.want {
 				t.Errorf("ProjectPath.Exists() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_resolveTildePaths(t *testing.T) {
+	// make temp paths for tests
+	tmpDir := t.TempDir()
+	tmpSubDirWithTilde := tmpDir + "/~folder1"
+
+	usr, err := user.Current()
+	if err != nil {
+		t.Fatalf("user.Current(): %s", err)
+	}
+
+	homeDir := usr.HomeDir
+
+	// make subdirectories
+	err = os.MkdirAll(tmpSubDirWithTilde, 0777)
+	if err != nil {
+		t.Fatalf("MkdirAll %q: %s", tmpSubDirWithTilde, err)
+	}
+
+	type args struct {
+		dir string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Tilde not home dir",
+			args: args{
+				dir: tmpSubDirWithTilde,
+			},
+			want: tmpSubDirWithTilde,
+		},
+		{
+			name: "Tilde is home dir",
+			args: args{
+				dir: "~",
+			},
+			want: homeDir,
+		},
+		{
+			name: "Tilde is home dir with slash",
+			args: args{
+				dir: "~/",
+			},
+			want: homeDir,
+		},
+		{
+			name: "Tilde is home dir with slash and child dir",
+			args: args{
+				dir: "~/folder1",
+			},
+			want: homeDir + "/folder1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := resolveTildePaths(tt.args.dir); got != tt.want {
+				t.Errorf("resolveTildePaths() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sbarrios93/pypher/pkg/cli/commands"
+	"github.com/sbarrios93/pypher/pkg/cli/commands/new_"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +17,7 @@ func newCliCommand() *cobra.Command {
 		Long:  `Pypher manages your packages and dependencies for your Python Projects, based on a pyproject.toml file`,
 	}
 
-	cliCommand.AddCommand(commands.NewCommand())
+	cliCommand.AddCommand(new_.NewCommand())
 
 	return cliCommand
 }
