@@ -5,7 +5,7 @@ type ProjectMeta struct {
 	Version       string
 	Description   string
 	Readme        string
-	Author        []map[string]string
+	Author        []string
 	PythonVersion string
 }
 
