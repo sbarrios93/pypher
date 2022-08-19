@@ -107,7 +107,7 @@ func promptDescription(p *projectconstructor.ProjectMeta) {
 	input.Validate = nil
 	input.Template = inputTemplate
 	input.ResultTemplate = resultTemplate
-	input.CharLimit = 4096
+	input.CharLimit = 4096 // FIXME: https://packaging.python.org/en/latest/specifications/core-metadata/#description establishes that the description length shouldn't be limited
 
 	description, err := input.RunPrompt()
 	if err != nil {
