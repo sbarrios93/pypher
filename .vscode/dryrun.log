@@ -1,18 +1,0 @@
-make --dry-run --always-make --keep-going --print-directory
-make: Entering directory `/Users/seba/go/src/github.com/sbarrios93/pypher'
-curl https://raw.githubusercontent.com/sagikazarmark/makefiles/master/go-app/main.mk > main.mk
- 
-  % Total    % Received % Xferd  Average Speed   Time    
-Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-100  6947  100  6947    0     0   115k      0 --:--:-- --:--:-- --:--:--  1
-28k
-
-make: Leaving directory `/Users/seba/go/src/github.com/sbarrios93/pypher'
- 
-make: Entering directory `/Users/seba/go/src/github.com/sbarrios93/pypher'
-grep -h -E '^[a-zA-Z_-]+:.*?## .*$'  Makefile main.mk | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $1, $2}'
- 
-make: Leaving directory `/Users/seba/go/src/github.com/sbarrios93/pypher'
- 

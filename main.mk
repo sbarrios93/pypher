@@ -1,7 +1,6 @@
 # Main targets for a Go app project
 #
 # A Self-Documenting Makefile: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
-# TODO: Understand this file
 
 OS = $(shell uname | tr A-Z a-z)
 export PATH := $(abspath bin/):${PATH}
@@ -16,7 +15,12 @@ ifdef SOURCE_DATE_EPOCH
 else
     BUILD_DATE ?= $(shell date "$(DATE_FMT)")
 endif
-LDFLAGS += -X main.version=${VERSION} -X main.commitHash=${COMMIT_HASH} -X main.buildDate=${BUILD_DATE}
+
+# LDFLAGS on
+LDFLAGS_OUTER = ${LDFLAGS}
+LDFLAGS_INNER := $(subst -L/,-L /,$(LDFLAGS_OUTER))
+LDFLAGS_INNER += -X main.version=${VERSION} -X main.commitHash=${COMMIT_HASH} -X main.buildDate=${BUILD_DATE}
+
 export CGO_ENABLED ?= 0
 ifeq (${VERBOSE}, 1)
 ifeq ($(filter -v,${GOARGS}),)
@@ -72,7 +76,9 @@ ifeq (${VERBOSE}, 1)
 endif
 
 	@mkdir -p ${BUILD_DIR}
-	go build ${GOARGS} -trimpath -tags "${GOTAGS}" -ldflags "${LDFLAGS}" -o ${BUILD_DIR}/$* ./cmd/$*
+
+	go build ${GOARGS} -trimpath -tags "${GOTAGS}" -ldflags "${LDFLAGS_INNER}" -o ${BUILD_DIR}/$* ./cmd/$*
+
 
 	@${MAKE} post-build
 
@@ -84,7 +90,7 @@ ifeq (${VERBOSE}, 1)
 endif
 
 	@mkdir -p ${BUILD_DIR}
-	go build ${GOARGS} -trimpath -tags "${GOTAGS}" -ldflags "${LDFLAGS}" -o ${BUILD_DIR}/ ./cmd/...
+	go build ${GOARGS} -trimpath -tags "${GOTAGS}" -ldflags "${LDFLAGS_INNER}" -o ${BUILD_DIR}/ ./cmd/...
 
 	@${MAKE} post-build
 
@@ -104,7 +110,8 @@ post-build-release: ${POST_BUILD_RELEASE_TARGETS}
 .PHONY: build-release
 build-release: build-release-deps pre-build-release
 build-release: ## Build binaries without debug information
-	@${MAKE} LDFLAGS="-w ${LDFLAGS}" GOARGS="${GOARGS} -trimpath" BUILD_DIR="${BUILD_DIR}/release" build
+
+	@${MAKE} LDFLAGS_INNER="-w ${LDFLAGS_INNER}" GOARGS="${GOARGS} -trimpath" BUILD_DIR="${BUILD_DIR}/release" build
 
 	@${MAKE} post-build-release
 
@@ -216,7 +223,3 @@ help:
 # Variable outputting/exporting rules
 var-%: ; @echo $($*)
 varexport-%: ; @echo $*=$($*)
-
-# Update main targets
-main.mk:
-	curl https://raw.githubusercontent.com/sagikazarmark/makefiles/master/go-app/main.mk > main.mk
