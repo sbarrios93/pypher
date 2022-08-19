@@ -9,6 +9,7 @@ import (
 	"github.com/erikgeiser/promptkit/textinput"
 	projectconstructor "github.com/sbarrios93/pypher/pkg/project_constructor"
 	stringvalidator "github.com/sbarrios93/pypher/pkg/utils/string_validator"
+	"github.com/sbarrios93/pypher/pkg/utils/sysinfo"
 )
 
 const initialVersion = "0.1.0"
@@ -160,10 +161,51 @@ func promptAuthor(p *projectconstructor.ProjectMeta) {
 	p.Author = append(p.Author, author)
 }
 
+func promptPythonVersion(p *projectconstructor.ProjectMeta) {
+
+	input := textinput.New("Python Version")
+	input.Validate = nil
+
+	pythonSplitVersion := strings.Split(sysinfo.PythonVersion(), ".")
+	input.InitialValue = "^" + pythonSplitVersion[0] + "." + pythonSplitVersion[1]
+
+	input.Template = inputTemplate
+	input.ResultTemplate = resultTemplate
+	input.CharLimit = 32
+
+	pythonVersion, err := input.RunPrompt()
+	if err != nil {
+		log.Fatalf("Error: %v\n", err)
+	}
+
+	p.PythonVersion = pythonVersion
+}
+
+func promptReadme(p *projectconstructor.ProjectMeta) {
+
+	input := textinput.New("Readme file name")
+	input.InitialValue = "README.md"
+	input.Validate = nil
+
+	input.Template = inputTemplate
+	input.ResultTemplate = resultTemplate
+	input.CharLimit = 128
+
+	readmeFilename, err := input.RunPrompt()
+	if err != nil {
+		log.Fatalf("Error: %v\n", err)
+	}
+
+	p.Readme = readmeFilename
+}
+
 func RunPrompt(projectMeta *projectconstructor.ProjectMeta, name string) {
 	initPrompt()
 	promptPackageName(projectMeta, name)
 	promptVersion(projectMeta)
 	promptDescription(projectMeta)
 	promptAuthor(projectMeta)
+	promptPythonVersion(projectMeta)
+	promptReadme(projectMeta)
+
 }
