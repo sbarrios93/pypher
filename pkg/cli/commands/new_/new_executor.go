@@ -24,7 +24,7 @@ func RunNew(projectPath *paths.ProjectPath, name string, unattended bool, init_ 
 	}
 
 	if !unattended {
-		promptPackageName(projectMeta, name)
+		RunPrompt(projectMeta, name)
 	}
 
 }

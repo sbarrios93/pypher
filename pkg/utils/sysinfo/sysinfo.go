@@ -2,11 +2,11 @@ package sysinfo
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"os/user"
+	"strings"
 )
 
 type commonPaths struct {
@@ -21,7 +21,7 @@ var CommonPaths = commonPaths{
 	UserHome:  usr.HomeDir,
 }
 
-func PythonVersion() {
+func PythonVersion() string {
 	command := exec.Command("python", "-V")
 
 	var out bytes.Buffer
@@ -33,7 +33,7 @@ func PythonVersion() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Python Version: %q", out.String())
+	return strings.Split(out.String(), " ")[1]
 
 }
 
