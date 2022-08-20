@@ -1,0 +1,16 @@
+[build-system]
+build-backend = ''
+requires = []
+
+[project]
+name = ''
+description = ''
+readme = ''
+requires-python = ''
+keywords = []
+authors = []
+classifiers = []
+dependencies = []
+dynamic = []
+
+[tool]

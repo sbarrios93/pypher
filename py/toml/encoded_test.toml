@@ -1,0 +1,17 @@
+[build-system]
+build-backend = ''
+requires = []
+
+[project]
+name = 'h-21-a'
+version = '0.1.0'
+description = 'This is a test'
+readme = 'README.md'
+requires-python = '^3.9'
+keywords = []
+authors = [{ name = '', email = '' }]
+classifiers = []
+dependencies = []
+dynamic = []
+
+[tool]
