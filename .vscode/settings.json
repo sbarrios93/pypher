@@ -5,5 +5,8 @@
         "make",
         "dependencies",
         "command"
-    ]
+    ],
+    "yaml.schemas": {
+        "https://json.schemastore.org/pre-commit-config.json": "file:///Users/seba/go/src/github.com/sbarrios93/pypher/.pre-commit-config.yaml"
+    }
 }
