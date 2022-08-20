@@ -3,6 +3,7 @@
     "conventionalCommits.scopes": [
         "github-actions",
         "make",
-        "dependencies"
+        "dependencies",
+        "command"
     ]
 }
