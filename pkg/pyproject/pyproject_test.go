@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewPyProject(t *testing.T) {
-	// assert := assert.New(t)
+	assert := assert.New(t)
 
 	tests := []struct {
 		name string
@@ -29,7 +29,7 @@ func TestNewPyProject(t *testing.T) {
 					Description:          "",
 					Readme:               "",
 					RequiresPython:       "",
-					License:              nil,
+					License:              LicenseInfo{},
 					Keywords:             nil,
 					Authors:              nil,
 					Classifiers:          nil,
@@ -42,6 +42,6 @@ func TestNewPyProject(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, NewPyProject())
+		assert.Equal(tt.want, NewPyProject())
 	}
 }

@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/erikgeiser/promptkit/selection"
 	"github.com/erikgeiser/promptkit/textinput"
 	"github.com/pelletier/go-toml/v2"
+	"github.com/sbarrios93/pypher/pkg/api/license"
 	"github.com/sbarrios93/pypher/pkg/pyproject"
 	stringvalidator "github.com/sbarrios93/pypher/pkg/utils/string_validator"
 	"github.com/sbarrios93/pypher/pkg/utils/sysinfo"
@@ -32,8 +34,28 @@ const inputTemplateWithValidation = `
 {{- end -}}
 `
 
+const selectLicenseTemplate = `
+ {{ Bold .Prompt -}}
+ {{ print "\n" }}
+ {{- range  $i, $choice := .Choices }}
+ {{- if IsScrollUpHintPosition $i }}
+ {{- print "⇡ " -}}
+ {{- else if IsScrollDownHintPosition $i -}}
+ {{- print "⇣ " -}}
+ {{- else -}}
+ {{- print "  " -}}
+ {{- end -}}
+ {{- if eq $.SelectedIndex $i }}
+ {{- print "[" (Foreground "32" (Bold "x")) "] " (Selected $choice) "\n" }}
+ {{- else }}
+ {{- print "[ ] " (Unselected $choice) "\n" }}
+ {{- end }}
+ {{- end}}`
+
 const resultTemplate = `
  {{Bold .Prompt }}: {{ (Foreground "32" .FinalValue) -}}{{- Foreground "2" (Bold " ✔") -}}`
+
+var selectionResultTemplate string = strings.ReplaceAll(resultTemplate, ".FinalValue", "( Final .FinalChoice )")
 
 func initPrompt() {
 	titleStyle := lipgloss.NewStyle().
@@ -120,6 +142,65 @@ func promptDescription(p *pyproject.PyProject) {
 	p.ProjectMeta.Description = description
 }
 
+func promptPythonVersion(p *pyproject.PyProject) {
+	input := textinput.New("Python Version")
+	input.Validate = nil
+
+	pythonSplitVersion := strings.Split(sysinfo.PythonVersion(), ".")
+	input.InitialValue = "^" + pythonSplitVersion[0] + "." + pythonSplitVersion[1]
+
+	input.Template = inputTemplate
+	input.ResultTemplate = resultTemplate
+	input.CharLimit = 32
+
+	pythonVersion, err := input.RunPrompt()
+	if err != nil {
+		log.Fatalf("Error: %v\n", err)
+	}
+
+	p.ProjectMeta.RequiresPython = pythonVersion
+}
+
+func promptReadme(p *pyproject.PyProject) {
+	// https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#readme
+	// FIXME: promptReadme can be either a string or a table.
+	// The readme field may also take a table. The file key has a string value representing a path relative to pyproject.toml to a file containing the full description. The text key has a string value which is the full description. These keys are mutually-exclusive, thus tools MUST raise an error if the metadata specifies both keys.
+
+	input := textinput.New("Readme file name")
+	input.InitialValue = "README.md"
+	input.Validate = nil
+
+	input.Template = inputTemplate
+	input.ResultTemplate = resultTemplate
+	input.CharLimit = 128
+
+	readmeFilename, err := input.RunPrompt()
+	if err != nil {
+		log.Fatalf("Error: %v\n", err)
+	}
+
+	p.ProjectMeta.Readme = readmeFilename
+}
+
+func promptLicense(p *pyproject.PyProject) {
+	licenses := license.GetLicenses().NameList()
+
+	sp := selection.New("License", licenses)
+	sp.PageSize = 3
+	sp.LoopCursor = true
+	sp.Template = selectLicenseTemplate
+	sp.ResultTemplate = selectionResultTemplate
+
+	choice, err := sp.RunPrompt()
+	if err != nil {
+		log.Fatalf("Error: %v\n", err)
+	}
+
+	p.ProjectMeta.License = pyproject.LicenseInfo{
+		Text: choice,
+	}
+}
+
 func promptAuthor(p *pyproject.PyProject) {
 	// https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#authors-maintainers
 	// FIXME: should assign a value according to specifications
@@ -165,54 +246,15 @@ func promptAuthor(p *pyproject.PyProject) {
 	}
 }
 
-func promptPythonVersion(p *pyproject.PyProject) {
-	input := textinput.New("Python Version")
-	input.Validate = nil
-
-	pythonSplitVersion := strings.Split(sysinfo.PythonVersion(), ".")
-	input.InitialValue = "^" + pythonSplitVersion[0] + "." + pythonSplitVersion[1]
-
-	input.Template = inputTemplate
-	input.ResultTemplate = resultTemplate
-	input.CharLimit = 32
-
-	pythonVersion, err := input.RunPrompt()
-	if err != nil {
-		log.Fatalf("Error: %v\n", err)
-	}
-
-	p.ProjectMeta.RequiresPython = pythonVersion
-}
-
-func promptReadme(p *pyproject.PyProject) {
-	// https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#readme
-	// FIXME: promptReadme can be either a string or a table.
-	// The readme field may also take a table. The file key has a string value representing a path relative to pyproject.toml to a file containing the full description. The text key has a string value which is the full description. These keys are mutually-exclusive, thus tools MUST raise an error if the metadata specifies both keys.
-
-	input := textinput.New("Readme file name")
-	input.InitialValue = "README.md"
-	input.Validate = nil
-
-	input.Template = inputTemplate
-	input.ResultTemplate = resultTemplate
-	input.CharLimit = 128
-
-	readmeFilename, err := input.RunPrompt()
-	if err != nil {
-		log.Fatalf("Error: %v\n", err)
-	}
-
-	p.ProjectMeta.Readme = readmeFilename
-}
-
 func RunPrompt(PyProject *pyproject.PyProject, name string) {
 	initPrompt()
 	promptPackageName(PyProject, name)
 	promptVersion(PyProject)
 	promptDescription(PyProject)
-	promptAuthor(PyProject)
-	promptPythonVersion(PyProject)
 	promptReadme(PyProject)
+	promptPythonVersion(PyProject)
+	promptLicense(PyProject)
+	promptAuthor(PyProject)
 
 	projectWrite, errMarshal := toml.Marshal(PyProject)
 
