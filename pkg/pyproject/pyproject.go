@@ -21,7 +21,7 @@ type ProjectMetaInfo struct {
 	Description          string                   `toml:"description"`
 	Readme               string                   `toml:"readme"`
 	RequiresPython       string                   `toml:"requires-python"`
-	License              LicenseInfo              `toml:"license, inline"`
+	License              LicenseInfo              `toml:"license,inline"`
 	Keywords             []string                 `toml:"keywords"`
 	Authors              []AuthorInfo             `toml:"authors,inline"`
 	Classifiers          []string                 `toml:"classifiers"`
@@ -31,13 +31,18 @@ type ProjectMetaInfo struct {
 	Urls                 UrlsInfo                 `toml:"urls"`
 }
 
-type LicenseInfo map[string]string
-type UrlsInfo map[string]string
-type OptionalDependenciesInfo map[string]string
+type (
+	UrlsInfo                 map[string]string
+	OptionalDependenciesInfo map[string]string
+)
 
 type AuthorInfo struct {
 	Name  string `toml:"name, inline"`
 	Email string `toml:"email, inline"`
+}
+type LicenseInfo struct {
+	File string `toml:"file,inline,omitempty"`
+	Text string `toml:"text,inline,omitempty"`
 }
 
 type Tools struct {
