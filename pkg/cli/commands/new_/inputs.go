@@ -48,7 +48,8 @@ func initPrompt() {
 }
 
 func promptPackageName(p *pyproject.PyProject, name string) {
-
+	// https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#name
+	// FIXME: should normnalize according to PEP 503: https://peps.python.org/pep-0503/
 	input := textinput.New("Package Name")
 	input.InitialValue = name
 
@@ -78,7 +79,8 @@ func promptPackageName(p *pyproject.PyProject, name string) {
 }
 
 func promptVersion(p *pyproject.PyProject) {
-
+	// https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#version
+	// FIXME: should comply with PEP 440 : https://peps.python.org/pep-0440/
 	input := textinput.New("Version")
 	input.InitialValue = initialVersion
 
@@ -109,7 +111,7 @@ func promptDescription(p *pyproject.PyProject) {
 	input.Validate = nil
 	input.Template = inputTemplate
 	input.ResultTemplate = resultTemplate
-	input.CharLimit = 4096
+	input.CharLimit = 4096 // FIXME: https://packaging.python.org/en/latest/specifications/core-metadata/#description establishes that the description length shouldn't be limited
 
 	description, err := input.RunPrompt()
 	if err != nil {
@@ -120,6 +122,10 @@ func promptDescription(p *pyproject.PyProject) {
 }
 
 func promptAuthor(p *pyproject.PyProject) {
+	// https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#authors-maintainers
+	// FIXME: should assign a value according to specifications
+
+	var author string
 
 	inputAuthor := textinput.New("Author")
 	inputAuthor.Validate = nil
@@ -181,6 +187,10 @@ func promptPythonVersion(p *pyproject.PyProject) {
 }
 
 func promptReadme(p *pyproject.PyProject) {
+
+	// https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#readme
+	// FIXME: promptReadme can be either a string or a table.
+	// The readme field may also take a table. The file key has a string value representing a path relative to pyproject.toml to a file containing the full description. The text key has a string value which is the full description. These keys are mutually-exclusive, thus tools MUST raise an error if the metadata specifies both keys.
 
 	input := textinput.New("Readme file name")
 	input.InitialValue = "README.md"
