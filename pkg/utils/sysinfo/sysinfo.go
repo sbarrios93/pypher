@@ -7,7 +7,14 @@ import (
 	"os/exec"
 	"os/user"
 	"strings"
+
+	"github.com/tcnksm/go-gitconfig"
 )
+
+type GitConfig struct {
+	UserName  string
+	UserEmail string
+}
 
 type commonPaths struct {
 	Currentwd string
@@ -28,13 +35,11 @@ func PythonVersion() string {
 	command.Stdout = &out
 
 	err := command.Run()
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return strings.Split(out.String(), " ")[1]
-
 }
 
 func Getwd() string {
@@ -43,4 +48,20 @@ func Getwd() string {
 		log.Fatalf("Error getting current working directory, got error %v", err)
 	}
 	return dir
+}
+
+func GetGitConfig() *GitConfig {
+	userName, errUserName := gitconfig.Username()
+	if errUserName != nil {
+		userName = ""
+	}
+	userEmail, errUserEmail := gitconfig.Email()
+	if errUserEmail != nil {
+		userEmail = ""
+	}
+
+	return &GitConfig{
+		UserName:  userName,
+		UserEmail: userEmail,
+	}
 }
