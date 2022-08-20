@@ -3,11 +3,13 @@ package new_
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/erikgeiser/promptkit/textinput"
-	projectconstructor "github.com/sbarrios93/pypher/pkg/project_constructor"
+	"github.com/pelletier/go-toml/v2"
+	"github.com/sbarrios93/pypher/pkg/pyproject"
 	stringvalidator "github.com/sbarrios93/pypher/pkg/utils/string_validator"
 	"github.com/sbarrios93/pypher/pkg/utils/sysinfo"
 )
@@ -45,7 +47,7 @@ func initPrompt() {
 	fmt.Printf("%s\n", titleStyle.Render("New Package"))
 }
 
-func promptPackageName(p *projectconstructor.ProjectMeta, name string) {
+func promptPackageName(p *pyproject.PyProject, name string) {
 
 	input := textinput.New("Package Name")
 	input.InitialValue = name
@@ -72,10 +74,10 @@ func promptPackageName(p *projectconstructor.ProjectMeta, name string) {
 		log.Fatalf("Error: %v\n", err)
 	}
 
-	p.Name = packageName
+	p.ProjectMeta.Name = packageName
 }
 
-func promptVersion(p *projectconstructor.ProjectMeta) {
+func promptVersion(p *pyproject.PyProject) {
 
 	input := textinput.New("Version")
 	input.InitialValue = initialVersion
@@ -98,10 +100,10 @@ func promptVersion(p *projectconstructor.ProjectMeta) {
 		log.Fatalf("Error: %v\n", err)
 	}
 
-	p.Version = semVer
+	p.ProjectMeta.Version = semVer
 }
 
-func promptDescription(p *projectconstructor.ProjectMeta) {
+func promptDescription(p *pyproject.PyProject) {
 
 	input := textinput.New("Description")
 	input.Validate = nil
@@ -114,11 +116,10 @@ func promptDescription(p *projectconstructor.ProjectMeta) {
 		log.Fatalf("Error: %v\n", err)
 	}
 
-	p.Description = description
+	p.ProjectMeta.Description = description
 }
 
-func promptAuthor(p *projectconstructor.ProjectMeta) {
-	var author string
+func promptAuthor(p *pyproject.PyProject) {
 
 	inputAuthor := textinput.New("Author")
 	inputAuthor.Validate = nil
@@ -132,9 +133,6 @@ func promptAuthor(p *projectconstructor.ProjectMeta) {
 	}
 
 	authorName = strings.TrimSpace(authorName)
-	if len(authorName) != 0 {
-		author += authorName
-	}
 
 	inputEmail := textinput.New("Email")
 	inputEmail.Validate = func(input string) error {
@@ -154,14 +152,15 @@ func promptAuthor(p *projectconstructor.ProjectMeta) {
 		log.Fatalf("Error: %v\n", err)
 	}
 
-	if len(authorEmail) != 0 {
-		author += fmt.Sprintf("<%s>", authorEmail)
+	p.ProjectMeta.Authors = []pyproject.AuthorInfo{
+		{
+			Name:  authorName,
+			Email: authorEmail,
+		},
 	}
-
-	p.Author = append(p.Author, author)
 }
 
-func promptPythonVersion(p *projectconstructor.ProjectMeta) {
+func promptPythonVersion(p *pyproject.PyProject) {
 
 	input := textinput.New("Python Version")
 	input.Validate = nil
@@ -178,10 +177,10 @@ func promptPythonVersion(p *projectconstructor.ProjectMeta) {
 		log.Fatalf("Error: %v\n", err)
 	}
 
-	p.PythonVersion = pythonVersion
+	p.ProjectMeta.RequiresPython = pythonVersion
 }
 
-func promptReadme(p *projectconstructor.ProjectMeta) {
+func promptReadme(p *pyproject.PyProject) {
 
 	input := textinput.New("Readme file name")
 	input.InitialValue = "README.md"
@@ -196,16 +195,26 @@ func promptReadme(p *projectconstructor.ProjectMeta) {
 		log.Fatalf("Error: %v\n", err)
 	}
 
-	p.Readme = readmeFilename
+	p.ProjectMeta.Readme = readmeFilename
 }
 
-func RunPrompt(projectMeta *projectconstructor.ProjectMeta, name string) {
+func RunPrompt(PyProject *pyproject.PyProject, name string) {
 	initPrompt()
-	promptPackageName(projectMeta, name)
-	promptVersion(projectMeta)
-	promptDescription(projectMeta)
-	promptAuthor(projectMeta)
-	promptPythonVersion(projectMeta)
-	promptReadme(projectMeta)
+	promptPackageName(PyProject, name)
+	promptVersion(PyProject)
+	promptDescription(PyProject)
+	promptAuthor(PyProject)
+	promptPythonVersion(PyProject)
+	promptReadme(PyProject)
 
+	projectWrite, errMarshal := toml.Marshal(PyProject)
+
+	if errMarshal != nil {
+		panic(errMarshal)
+	}
+
+	errWrite := os.WriteFile("./py/toml/encoded_test.toml", projectWrite, os.ModePerm)
+	if errWrite != nil {
+		panic(errWrite)
+	}
 }
