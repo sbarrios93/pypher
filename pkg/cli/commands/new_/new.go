@@ -15,14 +15,13 @@ func NewCommand() *cobra.Command {
 	// The following flags are available
 	// `--dir`
 	// `--name`
-	// `--interactive`
+	// `--unattended`
 	newCommand := &cobra.Command{
 		Use:       "new [init]",
 		Args:      cobra.MatchAll(cobra.OnlyValidArgs, cobra.MaximumNArgs(1)),
 		ValidArgs: []string{"init"},
 		Short:     "Start a new Python Project on the given path or initialize a python project under the current directory. Pass the `init` argument to initialize a project instead of starting a new one",
 		RunE: func(command *cobra.Command, args []string) error {
-
 			init_ := false
 			dir, _ := command.Flags().GetString("directory")
 			name, _ := command.Flags().GetString("name")
