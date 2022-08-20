@@ -3,13 +3,13 @@ build-backend = ''
 requires = []
 
 [project]
-name = 'h-21-a'
+name = 'sadsa'
 version = '0.1.0'
-description = 'This is a test'
+description = ''
 readme = 'README.md'
 requires-python = '^3.9'
 keywords = []
-authors = [{ name = '', email = '' }]
+authors = [{name = 'Sebastian Barrios', email = 'sbarrios93@gmail.com'}]
 classifiers = []
 dependencies = []
 dynamic = []

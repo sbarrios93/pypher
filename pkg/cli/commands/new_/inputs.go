@@ -106,7 +106,6 @@ func promptVersion(p *pyproject.PyProject) {
 }
 
 func promptDescription(p *pyproject.PyProject) {
-
 	input := textinput.New("Description")
 	input.Validate = nil
 	input.Template = inputTemplate
@@ -126,6 +125,7 @@ func promptAuthor(p *pyproject.PyProject) {
 	// FIXME: should assign a value according to specifications
 
 	inputAuthor := textinput.New("Author")
+	inputAuthor.InitialValue = sysinfo.GetGitConfig().UserName
 	inputAuthor.Validate = nil
 	inputAuthor.Template = inputTemplate
 	inputAuthor.ResultTemplate = resultTemplate
@@ -139,6 +139,7 @@ func promptAuthor(p *pyproject.PyProject) {
 	authorName = strings.TrimSpace(authorName)
 
 	inputEmail := textinput.New("Email")
+	inputEmail.InitialValue = sysinfo.GetGitConfig().UserEmail
 	inputEmail.Validate = func(input string) error {
 		if len(input) == 0 {
 			return nil
@@ -165,7 +166,6 @@ func promptAuthor(p *pyproject.PyProject) {
 }
 
 func promptPythonVersion(p *pyproject.PyProject) {
-
 	input := textinput.New("Python Version")
 	input.Validate = nil
 
@@ -185,7 +185,6 @@ func promptPythonVersion(p *pyproject.PyProject) {
 }
 
 func promptReadme(p *pyproject.PyProject) {
-
 	// https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#readme
 	// FIXME: promptReadme can be either a string or a table.
 	// The readme field may also take a table. The file key has a string value representing a path relative to pyproject.toml to a file containing the full description. The text key has a string value which is the full description. These keys are mutually-exclusive, thus tools MUST raise an error if the metadata specifies both keys.
