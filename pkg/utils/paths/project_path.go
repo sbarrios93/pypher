@@ -1,7 +1,6 @@
 package paths
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -28,7 +27,6 @@ func resolveTildePaths(dir string) string {
 }
 
 func AsProjectPath(dir string) *ProjectPath {
-
 	dir = resolveTildePaths(dir)
 
 	dir, err := filepath.Abs(dir)
@@ -59,7 +57,7 @@ func (p *ProjectPath) MkDirAll() {
 
 func (p *ProjectPath) IsEmpty() bool {
 	if p.Exists() {
-		dirs, err := ioutil.ReadDir(p.Path)
+		dirs, err := os.ReadDir(p.Path)
 		if err != nil {
 			log.Fatalf("can't check if dir %s is empty", p.Path)
 		}

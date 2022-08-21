@@ -1,6 +1,7 @@
 package paths
 
 import (
+	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -8,9 +9,16 @@ import (
 	"testing"
 )
 
+func closeFile(f *os.File) {
+	err := f.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+	}
+}
+
 func TestAsProjectPath(t *testing.T) {
 	tmpDir := t.TempDir()
-	tmpSubDir := tmpDir + "/any/path"
+	tmpSubDir := filepath.Join(tmpDir, "/any/path")
 
 	wd, err := os.Getwd()
 	if err != nil {
@@ -26,21 +34,12 @@ func TestAsProjectPath(t *testing.T) {
 		want *ProjectPath
 	}{
 		{
-			name: "Test root directory '/'",
-			args: args{dir: "/"},
-			want: &ProjectPath{
-				Path:   "/",
-				Name:   "/",
-				Parent: "/",
-			},
-		},
-		{
 			name: "Test any absolute dir",
 			args: args{dir: tmpSubDir},
 			want: &ProjectPath{
 				Path:   tmpSubDir,
 				Name:   "path",
-				Parent: tmpDir + "/any",
+				Parent: filepath.Join(tmpDir, "/any"),
 			},
 		},
 		{
@@ -63,10 +62,9 @@ func TestAsProjectPath(t *testing.T) {
 }
 
 func TestProjectPath_MkDirAll(t *testing.T) {
-
 	tmpDir := t.TempDir()
-	tmpSubDir := tmpDir + "/any/path"
-	err := os.MkdirAll(tmpSubDir, 0777)
+	tmpSubDir := filepath.Join(tmpDir, "/any/path")
+	err := os.MkdirAll(tmpSubDir, 0o777)
 	if err != nil {
 		t.Fatalf("MkdirAll %q: %s", tmpSubDir, err)
 	}
@@ -85,7 +83,7 @@ func TestProjectPath_MkDirAll(t *testing.T) {
 			fields: fields{
 				Path:   tmpSubDir,
 				Name:   "path",
-				Parent: tmpDir + "/any",
+				Parent: filepath.Join(tmpDir, "/any"),
 			},
 		},
 	}
@@ -102,25 +100,23 @@ func TestProjectPath_MkDirAll(t *testing.T) {
 }
 
 func TestProjectPath_IsEmpty(t *testing.T) {
-
 	// make temp paths for tests
 	tmpDir := t.TempDir()
-	tmpSubDir := tmpDir + "/folder1"
-	tmpSubSubDir := tmpSubDir + "/folder2"
-	tmpFile := tmpSubDir + "/file.txt"
+	tmpSubDir := filepath.Join(tmpDir, "/folder1")
+	tmpSubSubDir := filepath.Join(tmpSubDir, "/folder2")
 
 	// make subdirectories
-	err := os.MkdirAll(tmpSubSubDir, 0777)
+	err := os.MkdirAll(tmpSubSubDir, 0o777)
 	if err != nil {
 		t.Fatalf("MkdirAll %q: %s", tmpSubSubDir, err)
 	}
 
 	// make file
-	f, err := os.Create(tmpFile)
-	if err != nil {
-		t.Fatalf("create %q: %s", tmpFile, err)
+	tmpFile, errCreateTemp := os.CreateTemp(tmpSubDir, "*")
+	if errCreateTemp != nil {
+		t.Fatalf("create %q: %s", tmpFile.Name(), err)
 	}
-	defer f.Close()
+	defer closeFile(tmpFile)
 
 	type fields struct {
 		Path   string
@@ -177,23 +173,22 @@ func TestProjectPath_IsEmpty(t *testing.T) {
 func TestProjectPath_Exists(t *testing.T) {
 	// make temp paths for tests
 	tmpDir := t.TempDir()
-	tmpSubDir := tmpDir + "/folder1"
-	tmpSubSubDir := tmpSubDir + "/folder2"
-	tmpFile := tmpSubDir + "/file.txt"
-	tmpDirNotExists := tmpSubSubDir + "/doesnotexist"
+	tmpSubDir := filepath.Join(tmpDir, "/folder1")
+	tmpSubSubDir := filepath.Join(tmpSubDir, "/folder2")
+	tmpDirNotExists := filepath.Join(tmpSubSubDir, "/doesnotexist")
 
 	// make subdirectories
-	err := os.MkdirAll(tmpSubSubDir, 0777)
+	err := os.MkdirAll(tmpSubSubDir, 0o777)
 	if err != nil {
 		t.Fatalf("MkdirAll %q: %s", tmpSubSubDir, err)
 	}
 
 	// make file
-	f, err := os.Create(tmpFile)
-	if err != nil {
-		t.Fatalf("create %q: %s", tmpFile, err)
+	tmpFile, errCreateTemp := os.CreateTemp(tmpSubDir, "*")
+	if errCreateTemp != nil {
+		t.Fatalf("create %q: %s", tmpFile.Name(), err)
 	}
-	defer f.Close()
+	defer closeFile(tmpFile)
 
 	type fields struct {
 		Path   string
@@ -259,7 +254,7 @@ func TestProjectPath_Exists(t *testing.T) {
 func Test_resolveTildePaths(t *testing.T) {
 	// make temp paths for tests
 	tmpDir := t.TempDir()
-	tmpSubDirWithTilde := tmpDir + "/~folder1"
+	tmpSubDirWithTilde := filepath.Join(tmpDir, "/~folder1")
 
 	usr, err := user.Current()
 	if err != nil {
@@ -269,7 +264,7 @@ func Test_resolveTildePaths(t *testing.T) {
 	homeDir := usr.HomeDir
 
 	// make subdirectories
-	err = os.MkdirAll(tmpSubDirWithTilde, 0777)
+	err = os.MkdirAll(tmpSubDirWithTilde, 0o777)
 	if err != nil {
 		t.Fatalf("MkdirAll %q: %s", tmpSubDirWithTilde, err)
 	}
@@ -308,7 +303,7 @@ func Test_resolveTildePaths(t *testing.T) {
 			args: args{
 				dir: "~/folder1",
 			},
-			want: homeDir + "/folder1",
+			want: filepath.Join(homeDir, "/folder1"),
 		},
 	}
 	for _, tt := range tests {
