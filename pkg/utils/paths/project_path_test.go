@@ -1,12 +1,20 @@
 package paths
 
 import (
+	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
 	"reflect"
 	"testing"
 )
+
+func closeFile(f *os.File) {
+	err := f.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+	}
+}
 
 func TestAsProjectPath(t *testing.T) {
 	tmpDir := t.TempDir()
@@ -108,6 +116,7 @@ func TestProjectPath_IsEmpty(t *testing.T) {
 	if errCreateTemp != nil {
 		t.Fatalf("create %q: %s", tmpFile.Name(), err)
 	}
+	defer closeFile(tmpFile)
 
 	type fields struct {
 		Path   string
@@ -175,11 +184,11 @@ func TestProjectPath_Exists(t *testing.T) {
 	}
 
 	// make file
-	// make file
 	tmpFile, errCreateTemp := os.CreateTemp(tmpSubDir, "*")
 	if errCreateTemp != nil {
 		t.Fatalf("create %q: %s", tmpFile.Name(), err)
 	}
+	defer closeFile(tmpFile)
 
 	type fields struct {
 		Path   string
